@@ -20,6 +20,7 @@ mongod --replSet rs --dbpath ~/data/db/rs1 --port 27018 --fork --logpath ~/data/
 mongod --replSet rs --dbpath ~/data/db/rs2 --port 27019 --fork --logpath ~/data/db/rs2/mongod.log
 ```
 
+
 ### 2. Configurar el ReplicaSet
 Conéctate al Primary y ejecuta:
 ```bash
