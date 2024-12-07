@@ -1,0 +1,25 @@
+use('finanzas');
+
+db.facturas.aggregate([
+  // 1. Desglosar cada producto del array `item`
+  { $unwind: "$item" },
+
+  // 2. Agrupar por producto
+  {
+    $group: {
+      _id: "$item.producto",
+      cantidadTotalComprada: { $sum: "$item.cantidad" },
+      ingresosTotales: { $sum: { $multiply: ["$item.cantidad", "$item.precio"] } }
+    }
+  },
+
+  // 3. Proyección para claridad
+  {
+    $project: {
+      _id: 0,
+      producto: "$_id",
+      cantidadTotalComprada: 1,
+      ingresosTotales: 1
+    }
+  }
+]);

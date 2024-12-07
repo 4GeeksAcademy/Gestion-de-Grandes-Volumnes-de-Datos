@@ -1,0 +1,34 @@
+use('finanzas');
+
+db.facturas.aggregate([
+  // 1. Desglosar cada producto del array `item`
+  { $unwind: "$item" },
+
+  // 2. Agrupar por producto
+  {
+    $group: {
+      _id: "$item.producto",
+      cantidadTotalComprada: { $sum: "$item.cantidad" },
+      ingresosTotales: { $sum: { $multiply: ["$item.cantidad", "$item.precio"] } }
+    }
+  },
+
+  // 3. Ordenar por ingresos en forma ascendente
+  { $sort: { ingresosTotales: 1 } },
+
+  // 4. Saltear el primer resultado
+  { $skip: 1 },
+
+  // 5. Mostrar el segundo y tercer resultado
+  { $limit: 2 },
+
+  // 6. Proyección para claridad (opcional)
+  {
+    $project: {
+      _id: 0,
+      producto: "$_id",
+      cantidadTotalComprada: 1,
+      ingresosTotales: 1
+    }
+  }
+]);

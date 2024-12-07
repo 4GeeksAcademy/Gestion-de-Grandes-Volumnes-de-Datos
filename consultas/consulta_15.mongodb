@@ -1,0 +1,37 @@
+use('finanzas');
+
+db.facturas.aggregate([
+  // 1. Desglosar cada producto del array `item`
+  { $unwind: "$item" },
+
+  // 2. Calcular el gasto total por factura
+  {
+    $group: {
+      _id: "$_id", // Agrupar por ID de factura
+      cliente: { $first: "$cliente" }, // Mantener información del cliente
+      gastoTotalFactura: { $sum: { $multiply: ["$item.cantidad", "$item.precio"] } } // Calcular gasto total
+    }
+  },
+
+  // 3. Agrupar por cliente y calcular el gasto máximo en una factura
+  {
+    $group: {
+      _id: {
+        nombre: "$cliente.nombre",
+        apellido: "$cliente.apellido",
+        cuit: "$cliente.cuit"
+      },
+      maximoGastado: { $max: "$gastoTotalFactura" } // Calcular el mayor gasto por factura
+    }
+  },
+
+  // 4. Proyectar resultados
+  {
+    $project: {
+      _id: 0, // Ocultar `_id`
+      cliente: { $concat: ["$_id.nombre", " ", "$_id.apellido"] }, // Nombre completo del cliente
+      cuit: "$_id.cuit", // Mostrar el CUIT del cliente
+      maximoGastado: 1 // Mostrar el mayor gasto
+    }
+  }
+]);

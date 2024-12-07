@@ -1,0 +1,40 @@
+use('finanzas');
+
+db.facturas.aggregate([
+  // 1. Desglosar cada producto del array `item`
+  { $unwind: "$item" },
+
+  // 2. Calcular el gasto por producto
+  {
+    $addFields: {
+      gastoPorProducto: { $multiply: ["$item.cantidad", "$item.precio"] } // cantidad * precio
+    }
+  },
+
+  // 3. Agrupar por cliente y calcular el total gastado
+  {
+    $group: {
+      _id: {
+        nombre: "$cliente.nombre",
+        apellido: "$cliente.apellido"
+      },
+      totalGastado: { $sum: "$gastoPorProducto" } // Sumar los gastos por cliente
+    }
+  },
+
+  // 4. Filtrar clientes que gastaron más de 3,100,000
+  {
+    $match: {
+      totalGastado: { $gt: 3100000 } // Condición de gasto mínimo
+    }
+  },
+
+  // 5. Proyectar los resultados
+  {
+    $project: {
+      _id: 0, // Ocultar `_id`
+      cliente: { $concat: ["$_id.nombre", " ", "$_id.apellido"] }, // Concatenar nombre completo
+      total: "$totalGastado" // Mostrar el total gastado
+    }
+  }
+]);

@@ -1,0 +1,33 @@
+use('finanzas');
+
+db.facturas.aggregate([
+  // 1. Desglosar cada producto del array `item`
+  { $unwind: "$item" },
+
+  // 2. Calcular ingreso por producto y agrupar por región
+  {
+    $group: {
+      _id: "$cliente.region", // Agrupamos por región
+      ingresoTotal: { $sum: { $multiply: ["$item.cantidad", "$item.precio"] } } // Calculamos el ingreso total
+    }
+  },
+
+  // 3. Ordenar por ingreso total en forma ascendente
+  { $sort: { ingresoTotal: 1 } },
+
+  // 4. Seleccionar solo la región con menor ingreso
+  { $limit: 1 },
+
+  // 5. Proyección opcional para claridad
+  {
+    $project: {
+      _id: 0, // Ocultamos `_id`
+      region: "$_id", // Renombramos `_id` a `region`
+      ingresoTotal: 1 // Mostramos el ingreso total
+    }
+  }
+]);
+
+  
+  
+  

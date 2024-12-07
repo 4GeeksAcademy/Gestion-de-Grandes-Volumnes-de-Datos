@@ -1,0 +1,30 @@
+use('finanzas');
+
+db.facturas.aggregate([
+  // 1. Desglosar cada producto del array `item`
+  { $unwind: "$item" },
+
+  // 2. Agrupar por región y sumar la cantidad de productos
+  {
+    $group: {
+      _id: "$cliente.region", // Agrupamos por región
+      totalProductosVendidos: { $sum: "$item.cantidad" } // Sumar las cantidades de productos
+    }
+  },
+
+  // 3. Filtrar regiones con más de 10,000 productos vendidos
+  {
+    $match: {
+      totalProductosVendidos: { $gt: 10000 } // Condición: mayor a 10,000
+    }
+  },
+
+  // 4. Proyección opcional para claridad
+  {
+    $project: {
+      _id: 0, // Ocultar `_id`
+      region: "$_id", // Renombrar `_id` a `region`
+      totalProductosVendidos: 1 // Mantener el total
+    }
+  }
+]);

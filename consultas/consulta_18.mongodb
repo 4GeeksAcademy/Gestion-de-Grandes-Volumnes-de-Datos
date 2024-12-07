@@ -1,0 +1,32 @@
+use('finanzas');
+
+db.facturas.aggregate([
+  // 1. Desglosar cada producto del array `item`
+  { $unwind: "$item" },
+
+  // 2. Calcular el gasto total por factura
+  {
+    $group: {
+      _id: "$_id",
+      localidad: { $first: "$cliente.region" },
+      totalFactura: { $sum: { $multiply: ["$item.cantidad", "$item.precio"] } }
+    }
+  },
+
+  // 3. Agrupar por localidad y calcular el total facturado
+  {
+    $group: {
+      _id: "$localidad",
+      totalFacturado: { $sum: "$totalFactura" }
+    }
+  },
+
+  // 4. Proyectar resultados
+  {
+    $project: {
+      _id: 0,
+      localidad: "$_id",
+      totalFacturado: 1
+    }
+  }
+]);

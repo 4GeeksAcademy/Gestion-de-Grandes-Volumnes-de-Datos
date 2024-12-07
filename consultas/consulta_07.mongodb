@@ -1,0 +1,26 @@
+use('finanzas');
+
+db.facturas.aggregate([
+  // 1. Desglosar cada producto del array `item`
+  { $unwind: "$item" },
+
+  // 2. Agrupar por producto y contar cuántas facturas incluyen ese producto
+  {
+    $group: {
+      _id: "$item.producto",
+      cantidadFacturas: { $sum: 1 }
+    }
+  },
+
+  // 3. Ordenar por cantidad de facturas en orden descendente
+  { $sort: { cantidadFacturas: -1 } },
+
+  // 4. Proyección opcional para mayor claridad
+  {
+    $project: {
+      _id: 0,
+      producto: "$_id",
+      cantidadFacturas: 1
+    }
+  }
+]);

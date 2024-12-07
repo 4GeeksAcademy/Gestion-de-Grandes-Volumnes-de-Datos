@@ -1,0 +1,32 @@
+use('finanzas');
+
+db.facturas.aggregate([
+  // 1. Desglosar cada producto del array `item`
+  { $unwind: "$item" },
+
+  // 2. Calcular el gasto total por factura
+  {
+    $group: {
+      _id: "$_id",
+      region: { $first: "$cliente.region" },
+      gastoTotalFactura: { $sum: { $multiply: ["$item.cantidad", "$item.precio"] } }
+    }
+  },
+
+  // 3. Agrupar por región y calcular el promedio del gasto por factura
+  {
+    $group: {
+      _id: "$region",
+      promedioGastoPorFactura: { $avg: "$gastoTotalFactura" }
+    }
+  },
+
+  // 4. Proyectar resultados
+  {
+    $project: {
+      _id: 0,
+      region: "$_id",
+      promedioGastoPorFactura: 1
+    }
+  }
+]);

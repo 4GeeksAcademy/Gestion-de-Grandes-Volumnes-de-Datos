@@ -14,6 +14,3 @@ db.facturas.aggregate([
       $sort: { totalProductos: -1 } // Ordena por la cantidad total de productos vendidos en orden descendente
     }
   ]);
-  
-  
-  

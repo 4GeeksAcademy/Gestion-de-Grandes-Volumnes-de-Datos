@@ -1,0 +1,38 @@
+use('finanzas');
+
+db.facturas.aggregate([
+  // 1. Agrupar por cliente para contar facturas
+  {
+    $group: {
+      _id: {
+        cuit: "$cliente.cuit",
+        apellido: "$cliente.apellido",
+        nombre: "$cliente.nombre",
+        region: "$cliente.region"
+      },
+      cantidadFacturas: { $sum: 1 } // Contar las facturas
+    }
+  },
+
+  // 2. Proyección para reorganizar los datos
+  {
+    $project: {
+      _id: 0, // Ocultar `_id`
+      cuit: "$_id.cuit", // Mapear campos desde `_id`
+      apellido: "$_id.apellido",
+      nombre: "$_id.nombre",
+      region: "$_id.region",
+      cantidadFacturas: 1 // Mantener la cantidad de facturas
+    }
+  },
+
+  // 3. Filtrar clientes con CUIT mayor a 27,000,000,000
+  {
+    $match: {
+      cuit: { $gt: 2700000000 }
+    }
+  },
+
+  // 4. Ordenar por apellido en orden ascendente (opcional si es necesario mantener el orden del paso 4)
+  { $sort: { apellido: 1 } }
+]);

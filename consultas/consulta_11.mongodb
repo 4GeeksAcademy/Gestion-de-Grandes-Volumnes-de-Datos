@@ -1,0 +1,42 @@
+use('finanzas');
+
+db.facturas.aggregate([
+  // 1. Desglosar cada producto del array `item`
+  { $unwind: "$item" },
+
+  // 2. Construir el nombre completo de las personas
+  {
+    $addFields: {
+      nombreCompleto: { $concat: ["$cliente.nombre", " ", "$cliente.apellido"] }
+    }
+  },
+
+  // 3. Agrupar por producto
+  {
+    $group: {
+      _id: "$item.producto",
+      personas: { $addToSet: "$nombreCompleto" }
+    }
+  },
+
+  // 4. Añadir la cantidad de personas diferentes
+  {
+    $addFields: {
+      cantidadPersonas: { $size: "$personas" }
+    }
+  },
+
+  // 5. Ordenar por la cantidad de personas en forma descendente
+  { $sort: { cantidadPersonas: -1 } },
+
+  // 6. Proyectar los resultados
+  {
+    $project: {
+      _id: 0,
+      producto: "$_id",
+      cantidadPersonas: 1,
+      personas: 1
+    }
+  }
+]);
+

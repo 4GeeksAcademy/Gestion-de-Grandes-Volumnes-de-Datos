@@ -1,0 +1,23 @@
+use('finanzas');
+
+db.facturas.aggregate([
+  // 1. Desglosar cada producto del array `item`
+  { $unwind: "$item" },
+
+  // 2. Calcular el gasto total por factura
+  {
+    $group: {
+      _id: "$_id", // Agrupar por ID de factura
+      nroFactura: { $first: "$nroFactura" },
+      cliente: { $first: "$cliente" },
+      fechaEmision: { $first: "$fechaEmision" },
+      gastoTotalFactura: { $sum: { $multiply: ["$item.cantidad", "$item.precio"] } } // Calcular gasto total
+    }
+  },
+
+  // 3. Ordenar por gasto total descendente y número de factura ascendente
+  { $sort: { gastoTotalFactura: -1, nroFactura: 1 } },
+
+  // 4. Tomar la primera factura
+  { $limit: 1 }
+]);

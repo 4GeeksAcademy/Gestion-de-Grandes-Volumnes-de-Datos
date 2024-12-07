@@ -1,0 +1,31 @@
+use('finanzas');
+
+db.facturas.aggregate([
+  // 1. Desglosar cada producto del array `item`
+  { $unwind: "$item" },
+
+  // 2. Construir el nombre completo de las personas
+  {
+    $addFields: {
+      nombreCompleto: { $concat: ["$cliente.nombre", " ", "$cliente.apellido"] }
+    }
+  },
+
+  // 3. Agrupar por producto
+  {
+    $group: {
+      _id: "$item.producto",
+      personas: { $addToSet: "$nombreCompleto" }
+    }
+  },
+
+  // 4. Proyectar los resultados
+  {
+    $project: {
+      _id: 0,
+      producto: "$_id",
+      personas: 1
+    }
+  }
+]);
+
