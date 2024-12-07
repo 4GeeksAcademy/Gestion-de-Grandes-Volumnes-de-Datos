@@ -1,0 +1,5 @@
+// Cambia a la base de datos 'finanzas'
+use('finanzas');
+
+// Encuentra todos los documentos en la colección 'facturas'
+db.facturas.find().pretty();

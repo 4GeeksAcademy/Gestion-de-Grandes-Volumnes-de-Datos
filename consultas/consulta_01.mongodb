@@ -1,0 +1,19 @@
+use('finanzas');
+
+db.facturas.aggregate([
+    {
+      $unwind: "$item" // Descompone el array "item" en múltiples documentos
+    },
+    {
+      $group: {
+        _id: "$cliente.region", // Agrupa por la región del cliente
+        totalProductos: { $sum: "$item.cantidad" } // Suma las cantidades de los productos
+      }
+    },
+    {
+      $sort: { totalProductos: -1 } // Ordena por la cantidad total de productos vendidos en orden descendente
+    }
+  ]);
+  
+  
+  
